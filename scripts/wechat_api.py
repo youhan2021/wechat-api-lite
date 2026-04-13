@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-wechat-api — 微信公众号 API 集成脚本
+wechat-api-lite — 微信公众号 API 轻量化脚本
 支持：获取 access_token、上传素材、创建草稿、发布等
 
 环境变量（从 config.env 读取）：
