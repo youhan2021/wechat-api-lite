@@ -167,9 +167,40 @@ python3 $HOME/.hermes/skills/wechat-api/scripts/wechat_api.py draft-list
 ---
 
 ## ⚠️ API 行为注意事项
+## 已知问题 & API 行为记录
 
-- **草稿接口成功时不返回 `errcode`**：微信新增草稿接口（`draft/add`）和草稿计数接口（`draft/count`）调用成功时**没有 `errcode` 字段**，直接返回 `media_id` / `total_count`。判断成功应检查这些字段是否存在，而非 `errcode == 0`。
-- `access_token` 有效期 2 小时，脚本自动维护缓存，勿频繁手动刷新
+### access_token 过期处理
+
+token 过期后，微信返回 `errcode: 40001`（"invalid credential, access_token is invalid or not latest"），所有 API 调用均失败。
+
+**症状**：调用任何命令都报错 `{'errcode': 40001, 'errmsg': 'invalid credential...'}`
+
+**解决方法**：清除本地 token 缓存后重试：
+```bash
+rm ~/.hermes/skills/wechat-api/scripts/.token_cache
+# 然后重新运行命令
+python3 $HOME/.hermes/skills/wechat-api/scripts/wechat_api.py upload-thumb ...
+```
+
+### API 成功响应格式（无 errcode）
+
+以下接口在成功时不返回 `errcode` 字段，只返回业务字段。判断成功的依据是检查对应字段是否存在，而非 `errcode == 0`：
+
+| 接口 | 成功判断 |
+|------|---------|
+| `draft/add`（创建草稿） | 检查 `"media_id" in result` |
+| `draft/count`（草稿数量） | 检查 `"total_count" in result` |
+
+### 图片 URL vs media_id
+
+- **`upload-image`**：返回 `media_id` + `url`。正文 HTML 中用 `url`（`mmbiz.qpic.cn` 域名）嵌入图片
+- **`upload-thumb`**：返回 `media_id`（即 `thumb_media_id`）。用于创建草稿时指定封面图
+
+两者不可混用。
+
+## 注意事项
+
+- `access_token` 有效期 2 小时，脚本自动维护缓存，token 过期后手动清除缓存重刷
 - 永久素材有总量限制（公众平台限制），缩略图不超过 2MB
 - 封面图尺寸推荐 900 × 383 px（2.35:1），正文图片建议宽度 ≤ 1080px
 - 草稿创建后可在 [mp.weixin.qq.com](https://mp.weixin.qq.com) 草稿箱中查看和编辑
