@@ -166,8 +166,9 @@ python3 $HOME/.hermes/skills/wechat-api/scripts/wechat_api.py draft-list
 
 ---
 
-## 注意事项
+## ⚠️ API 行为注意事项
 
+- **草稿接口成功时不返回 `errcode`**：微信新增草稿接口（`draft/add`）和草稿计数接口（`draft/count`）调用成功时**没有 `errcode` 字段**，直接返回 `media_id` / `total_count`。判断成功应检查这些字段是否存在，而非 `errcode == 0`。
 - `access_token` 有效期 2 小时，脚本自动维护缓存，勿频繁手动刷新
 - 永久素材有总量限制（公众平台限制），缩略图不超过 2MB
 - 封面图尺寸推荐 900 × 383 px（2.35:1），正文图片建议宽度 ≤ 1080px
